@@ -1,1 +1,1 @@
-# tools-calendar
+# Tools for parsing .ics calendar files
