@@ -13,11 +13,10 @@ from zoneinfo import ZoneInfo
 import icalendar
 from dateutil import rrule
 
-path_to_ics_file = Path("cal.ics")
+PATH_TO_ICS_FILE = Path("cal.ics")
 TZ_DE = ZoneInfo("Europe/Berlin")
-min_duration = dt.timedelta(hours=4)
-
-now_dt = dt.datetime.now(tz=TZ_DE).replace(tzinfo=None)
+MIN_DURATION = dt.timedelta(hours=4)
+NOW_DT = dt.datetime.now(tz=TZ_DE).replace(tzinfo=None)
 
 
 def convert_date_or_dt_to_dt(date_or_dt: dt.date | dt.datetime) -> dt.datetime:
@@ -62,49 +61,58 @@ def get_next_recurrences(event: icalendar.Event, start_dt: dt.datetime) -> tuple
 
     # Get all occurrences from the start_date to the future reference_date
     next_occurrences = tuple(
-        recurrence_rule.between(now_dt, now_dt + dt.timedelta(days=365))
+        recurrence_rule.between(NOW_DT, NOW_DT + dt.timedelta(days=365))
     )
     return next_occurrences
 
 
-if __name__ == "__main__":
-    with path_to_ics_file.open(encoding="utf-8", newline="\r\n") as f:
-        calendar = icalendar.Calendar.from_ical(f.read())
+def process_event(event: icalendar.Event, future_events: list) -> None:
+    """
+    Process single event and add it to the future events list if it meets the criteria.
+    """
+    start = event.get("DTSTART").dt
+    start_dt = convert_date_or_dt_to_dt(start)
 
-    future_events = []
-    for event in calendar.walk("VEVENT"):
-        start = event.get("DTSTART").dt
-        start_dt = convert_date_or_dt_to_dt(start)
+    # Filter on duration
+    end_dt = get_end_dt(event, start_dt)
+    duration = end_dt - start_dt
+    if duration < MIN_DURATION:
+        return
 
-        # filter on duration
-        end_dt = get_end_dt(event, start_dt)
-        duration = end_dt - start_dt
-        if duration < min_duration:
-            continue
+    # Filter non-repeating events of the past
+    if "RRULE" not in event and start_dt.date() < NOW_DT.date():
+        return
 
-        # filter non-repeating events of the past
-        if "RRULE" not in event and start_dt.date() < now_dt.date():
-            continue
+    # Repeating events
+    if "RRULE" in event:
+        # Filter on "until" in the past
+        if "UNTIL" in event["RRULE"]:
+            until = event["RRULE"]["UNTIL"][0]
+            until_dt = convert_date_or_dt_to_dt(until)
+            if until_dt.date() < NOW_DT.date():
+                return
 
-        # repeating events
-        if "RRULE" in event:
-            # filter on "until" in the past
-            if "UNTIL" in event["RRULE"]:
-                until = event["RRULE"]["UNTIL"][0]
-                until_dt = convert_date_or_dt_to_dt(until)
-                if until_dt.date() < now_dt.date():
-                    continue
+        # Filter on "next_occurrence" in next 365 days
+        next_occurrences = get_next_recurrences(event, start_dt)
+        if not next_occurrences:
+            return
 
-            # filter on "next_occurrence" in next 365 days
-            next_occurrences = get_next_recurrences(event, start_dt)
-            if not next_occurrences:
-                continue
+    summary = str(event.get("SUMMARY")).strip()
 
-        summary = str(event.get("SUMMARY")).strip()
-
-        # add non-repeating event
-        if "RRULE" not in event:
-            future_events.append(
+    # Add non-repeating event
+    if "RRULE" not in event:
+        future_events.append(
+            {
+                "start": start_dt,
+                "duration": duration,
+                "summary": summary,
+                "week": str(start_dt.date().isocalendar()[1]).zfill(2),
+            }
+        )
+    # Add (multiple) repeating events
+    else:
+        for start_dt in next_occurrences:
+            future_events.append(  # noqa: PERF401
                 {
                     "start": start_dt,
                     "duration": duration,
@@ -112,17 +120,19 @@ if __name__ == "__main__":
                     "week": str(start_dt.date().isocalendar()[1]).zfill(2),
                 }
             )
-        # add (multiple) repeating events
-        else:
-            for start_dt in next_occurrences:
-                future_events.append(  # noqa: PERF401
-                    {
-                        "start": start_dt,
-                        "duration": duration,
-                        "summary": summary,
-                        "week": str(start_dt.date().isocalendar()[1]).zfill(2),
-                    }
-                )
+
+
+def main() -> None:  # noqa: D103
+    with PATH_TO_ICS_FILE.open(encoding="utf-8", newline="\r\n") as f:
+        calendar = icalendar.Calendar.from_ical(f.read())
+
+    future_events = []
+    for event in calendar.walk("VEVENT"):
+        process_event(event, future_events)
 
     for event in sorted(future_events, key=lambda x: x["start"]):
         print(f"KW{event["week"]} {event["start"].date()} {event["summary"]}")
+
+
+if __name__ == "__main__":
+    main()
