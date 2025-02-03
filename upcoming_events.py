@@ -131,7 +131,7 @@ def main() -> None:  # noqa: D103
         process_event(event, future_events)
 
     for event in sorted(future_events, key=lambda x: x["start"]):
-        print(f"KW{event["week"]} {event["start"].date()} {event["summary"]}")
+        print(f"KW{event['week']} {event['start'].date()} {event['summary']}")
 
 
 if __name__ == "__main__":
