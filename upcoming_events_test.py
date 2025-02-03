@@ -27,23 +27,23 @@ def test_convert_datetime_no_tz() -> None:
 def test_convert_datetime_with_tz_de() -> None:
     dt_with_tz = dt.datetime(2022, 1, 1, 12, 0, 0, tzinfo=ZoneInfo("Europe/Berlin"))
     expected_dt = dt.datetime(2022, 1, 1, 12, 0, 0, tzinfo=None)
-    assert (
-        convert_date_or_dt_to_dt(dt_with_tz) == expected_dt
-    ), convert_date_or_dt_to_dt(dt_with_tz)
+    assert convert_date_or_dt_to_dt(dt_with_tz) == expected_dt, (
+        convert_date_or_dt_to_dt(dt_with_tz)
+    )
 
 
 def test_convert_datetime_with_tz_utc() -> None:
     dt_with_tz = dt.datetime(2022, 1, 1, 12, 0, 0, tzinfo=dt.UTC)
     expected_dt = dt.datetime(2022, 1, 1, 13, 0, 0, tzinfo=None)
-    assert (
-        convert_date_or_dt_to_dt(dt_with_tz) == expected_dt
-    ), convert_date_or_dt_to_dt(dt_with_tz)
+    assert convert_date_or_dt_to_dt(dt_with_tz) == expected_dt, (
+        convert_date_or_dt_to_dt(dt_with_tz)
+    )
 
     dt_with_tz = dt.datetime(2022, 7, 1, 12, 0, 0, tzinfo=dt.UTC)
     expected_dt = dt.datetime(2022, 7, 1, 14, 0, 0, tzinfo=None)
-    assert (
-        convert_date_or_dt_to_dt(dt_with_tz) == expected_dt
-    ), convert_date_or_dt_to_dt(dt_with_tz)
+    assert convert_date_or_dt_to_dt(dt_with_tz) == expected_dt, (
+        convert_date_or_dt_to_dt(dt_with_tz)
+    )
 
 
 if __name__ == "__main__":
