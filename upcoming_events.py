@@ -109,7 +109,7 @@ def process_event(event: icalendar.Event, future_events: list) -> None:
                 "week": str(start_dt.date().isocalendar()[1]).zfill(2),
             }
         )
-    # Add (multiple) repeating events
+    # Add repeating events
     else:
         for start_dt in next_occurrences:
             future_events.append(  # noqa: PERF401
@@ -128,7 +128,7 @@ def main() -> None:  # noqa: D103
 
     future_events = []
     for event in calendar.walk("VEVENT"):
-        process_event(event, future_events)
+        process_event(event, future_events)  # type: ignore
 
     for event in sorted(future_events, key=lambda x: x["start"]):
         print(f"KW{event['week']} {event['start'].date()} {event['summary']}")
