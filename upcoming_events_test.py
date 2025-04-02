@@ -1,5 +1,5 @@
 """
-Unit tests for read_cal.py .
+Unit tests for upcoming_events.py .
 """
 
 # ruff: noqa: D103 DTZ001 S101
