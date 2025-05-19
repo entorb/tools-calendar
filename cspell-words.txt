@@ -12,5 +12,7 @@ noqa
 pyupgrade
 rrule
 rrulestr
+SonarCloud
+SonarQube
 Torben
 VEVENT
