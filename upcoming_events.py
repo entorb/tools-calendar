@@ -26,7 +26,7 @@ def convert_date_or_dt_to_dt(date_or_dt: dt.date | dt.datetime) -> dt.datetime:
     in German timezone
     without timezone info
     """
-    if isinstance(date_or_dt, dt.datetime):
+    if type(date_or_dt) is dt.datetime:
         my_dt = date_or_dt.replace(microsecond=0)
         if my_dt.tzinfo is not None:
             my_dt = my_dt.astimezone(TZ_DE).replace(tzinfo=None)
