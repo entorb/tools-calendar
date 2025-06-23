@@ -2,7 +2,7 @@
 Unit tests for upcoming_events.py .
 """
 
-# ruff: noqa: D103 DTZ001 S101
+# ruff: noqa: D103, DTZ001
 
 import datetime as dt
 from zoneinfo import ZoneInfo
