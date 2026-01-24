@@ -1,0 +1,18 @@
+# CSpell Custom Dictionary Words
+autoflake
+autoupdate
+dateutil
+DTEND
+DTSTART
+ical
+icalendar
+isort
+Menke
+noqa
+pyupgrade
+rrule
+rrulestr
+SonarCloud
+SonarQube
+Torben
+VEVENT
