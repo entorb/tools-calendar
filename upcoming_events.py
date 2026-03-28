@@ -4,8 +4,11 @@ Upcoming Events.
 Read calendar .ics file
 Create sorted list of future events (single events and repeating events)
 Filter on min 4 hour duration
+
+Manually transfer the relevant ones into a manually prepared Excel/Google Sheet
 """
 
+import csv
 import datetime as dt
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -14,9 +17,12 @@ import icalendar
 from dateutil import rrule
 
 PATH_TO_ICS_FILE = Path("cal.ics")
+PATH_OUT_CSV = Path("upcoming_events.csv")
 TZ_DE = ZoneInfo("Europe/Berlin")
 MIN_DURATION = dt.timedelta(hours=4)
 NOW_DT = dt.datetime.now(tz=TZ_DE).replace(tzinfo=None)
+CSV_SEP = ";"
+DATE_FORMAT = "%d.%m.%Y"
 
 
 def convert_date_or_dt_to_dt(date_or_dt: dt.date | dt.datetime) -> dt.datetime:
@@ -130,8 +136,22 @@ def main() -> None:  # noqa: D103
     for event in calendar.walk("VEVENT"):
         process_event(event, future_events)  # type: ignore
 
-    for event in sorted(future_events, key=lambda x: x["start"]):
-        print(f"KW{event['week']} {event['start'].date()} {event['summary']}")
+    future_events = sorted(future_events, key=lambda x: x["start"])
+
+    with PATH_OUT_CSV.open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.writer(fh, delimiter=CSV_SEP)
+        writer.writerow(["week", "start", "summary"])
+        for event in sorted(future_events, key=lambda x: x["start"]):
+            writer.writerow(
+                [
+                    f"KW{event['week']}",
+                    event["start"].date().strftime(DATE_FORMAT),
+                    event["summary"],
+                ]
+            )
+            print(
+                f"KW{event['week']} {event['start'].date().strftime(DATE_FORMAT)} {event['summary']}"
+            )
 
 
 if __name__ == "__main__":
