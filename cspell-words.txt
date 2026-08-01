@@ -9,6 +9,7 @@ icalendar
 isort
 Menke
 noqa
+prek
 pyupgrade
 rrule
 rrulestr
